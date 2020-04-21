@@ -1,0 +1,23 @@
+version: "3.3"
+
+services:
+  frontend:
+    image: snymanc/swarm-demo-frontend:rpi-v2
+    build:
+      context: .
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/app
+    environment:
+      - POSTGRES_USER=demo
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=demo
+      - POSTGRES_HOST=db
+
+  db:
+    image: snymanc/swarm-demo-db:rpi-v1
+    environment:
+      - POSTGRES_USER=demo
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=demo

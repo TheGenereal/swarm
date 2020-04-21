@@ -1,0 +1,35 @@
+version: "3.3"
+
+services:
+  db:
+    image: snymanc/swarm-demo-db:rpi-v1
+    env_file:
+      - db.env
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        reservations:
+          memory: 256M
+      placement:
+        constraints:
+          - node.hostname == rpi4
+
+  frontend:
+    image: snymanc/swarm-demo-frontend:rpi-v2
+    env_file:
+      - app.env
+    deploy:
+      replicas: 10
+
+  lb:
+    image: snymanc/swarm-demo-lb:rpi-v1
+    environment:
+      - PROXY_UPSTREAM=frontend:8080
+    ports:
+      - 80:80
+    deploy:
+      replicas: 3
+
+volumes:
+  pg-data:
