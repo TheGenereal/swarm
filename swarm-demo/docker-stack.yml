@@ -16,11 +16,16 @@ services:
           - node.hostname == rpi4
 
   frontend:
-    image: snymanc/swarm-demo-frontend:rpi-v2
+    image: snymanc/swarm-demo-frontend:rpi-v3
     env_file:
       - app.env
     deploy:
       replicas: 10
+      update_config:
+        failure_action: rollback
+        parallelism: 3
+        delay: 3s
+        max_failure_ratio: 0.1
 
   lb:
     image: snymanc/swarm-demo-lb:rpi-v1
