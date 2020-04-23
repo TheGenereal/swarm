@@ -5,8 +5,6 @@ require 'pg'
 set :bind, '0.0.0.0'
 set :port, 8080
 
-raise "Simulating an error"
-
 AppState = {}
 AppState[:total_requests] = 0
 
@@ -16,7 +14,7 @@ get '/' do
   manager = RequestManager.new
   manager.store_request(request.ip, '/', Socket.gethostname, Time.now)
 
-  erb :index, locals: { requests: manager.get_requests(25), total_requests: AppState[:total_requests] }
+  erb :index, locals: { requests: manager.get_requests(30), total_requests: AppState[:total_requests] }
 end
 
 class RequestManager

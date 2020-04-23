@@ -1,6 +1,20 @@
-version: "3.3"
+version: "3.4"
 
 services:
+  frontend:
+    image: snymanc/swarm-demo-frontend:rpi-v4
+    secrets:
+      - pg_secret
+    env_file:
+      - app.env
+    deploy:
+      replicas: 10
+      update_config:
+        failure_action: rollback
+        parallelism: 3
+        delay: 3s
+        max_failure_ratio: 0.1
+
   db:
     image: snymanc/swarm-demo-db:rpi-v1
     env_file:
@@ -13,19 +27,7 @@ services:
           memory: 256M
       placement:
         constraints:
-          - node.hostname == rpi4
-
-  frontend:
-    image: snymanc/swarm-demo-frontend:rpi-v3
-    env_file:
-      - app.env
-    deploy:
-      replicas: 10
-      update_config:
-        failure_action: rollback
-        parallelism: 3
-        delay: 3s
-        max_failure_ratio: 0.1
+          - node.hostname == rpi1
 
   lb:
     image: snymanc/swarm-demo-lb:rpi-v1
@@ -38,3 +40,8 @@ services:
 
 volumes:
   pg-data:
+
+secrets:
+  pg_secret:
+    external: true
+
