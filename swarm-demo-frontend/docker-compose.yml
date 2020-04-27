@@ -1,26 +1,21 @@
-version: "3.3"
+version: "3.4"
 
 services:
   frontend:
-    image: snymanc/swarm-demo-frontend:rpi-v4
-    build:
-      context: .
-    ports:
-      - 8080:8080
-    volumes:
-      - .:/app
-      - ./pg_secret:/var/run/pg_secret
-    environment:
-      - POSTGRES_USER=demo
-      - POSTGRES_DB=demo
-      - POSTGRES_HOST=db
-      - POSTGRES_PASSWORD_FILE=/var/run/pg_secret
+    image: snymanc/swarm-demo-frontend:rpi-v6
+    env_file:
+      - config/app.env
 
   db:
-    image: snymanc/swarm-demo-db:rpi-v1
-    environment:
-      - POSTGRES_USER=demo
-      - POSTGRES_DB=demo
-      - POSTGRES_PASSWORD_FILE=/var/run/pg_secret
+    image: postgres:9.6-alpine
     volumes:
-      - ./pg_secret:/var/run/pg_secret
+      - pg-data:/var/lib/postgresql/data
+    env_file:
+      - config/db.env
+
+  lb:
+    image: snymanc/swarm-demo-lb:rpi-v1
+    environment:
+      - PROXY_UPSTREAM=frontend:8080
+    ports:
+      - 80:80
