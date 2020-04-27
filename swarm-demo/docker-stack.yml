@@ -8,7 +8,7 @@ services:
     env_file:
       - app.env
     deploy:
-      replicas: 10
+      replicas: 5
       update_config:
         failure_action: rollback
         parallelism: 3
@@ -16,11 +16,16 @@ services:
         max_failure_ratio: 0.1
 
   db:
-    image: snymanc/swarm-demo-db:rpi-v1
+    image: postgres:9.6-alpine
     env_file:
       - db.env
+    secrets:
+      - pg_secret
     volumes:
       - pg-data:/var/lib/postgresql/data
+    configs:
+      - source: dcnf_create_table_sql
+        target: /docker-entrypoint-initdb.d/create_table.sql
     deploy:
       resources:
         reservations:
@@ -36,12 +41,17 @@ services:
     ports:
       - 80:80
     deploy:
-      replicas: 3
+      replicas: 2
 
 volumes:
   pg-data:
 
 secrets:
   pg_secret:
-    external: true
+    file: ./pg_secret
 
+configs:
+  create_table_sql:
+    file: ../swarm-demo-db/create_table.sql
+  dcnf_create_table_sql:
+    external: true
