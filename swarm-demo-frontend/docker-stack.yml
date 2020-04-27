@@ -1,0 +1,59 @@
+configs:
+  create_table:
+    file: /Users/thegeneral/workspace/docker/examples/swarm/swarm-demo-frontend/sql/create_table.sql
+secrets:
+  pg_secret:
+    file: /Users/thegeneral/workspace/docker/examples/swarm/swarm-demo-frontend/secrets/pg_secret
+services:
+  db:
+    configs:
+    - mode: 292
+      source: create_table
+      target: /docker-entrypoint-initdb.d/create_table.sql
+    deploy:
+      placement:
+        constraints:
+        - node.hostname == rpi1
+      resources:
+        reservations:
+          memory: 256M
+    environment:
+      POSTGRES_DB: demo
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_secret
+      POSTGRES_USER: demo
+    image: postgres:9.6-alpine
+    secrets:
+    - source: pg_secret
+    volumes:
+    - pg-data:/var/lib/postgresql/data:rw
+  frontend:
+    deploy:
+      replicas: 10
+      update_config:
+        delay: 3s
+        failure_action: rollback
+        max_failure_ratio: 0.1
+        parallelism: 3
+    environment:
+      NUMBER_OF_REQUESTS: '50'
+      POSTGRES_DB: demo
+      POSTGRES_HOST: db
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_secret
+      POSTGRES_USER: demo
+    image: snymanc/swarm-demo-frontend:rpi-v6
+    secrets:
+    - source: pg_secret
+  lb:
+    deploy:
+      replicas: 3
+    environment:
+      PROXY_UPSTREAM: frontend:8080
+    image: snymanc/swarm-demo-lb:rpi-v1
+    ports:
+    - published: 80
+      target: 80
+version: '3.4'
+volumes:
+  pg-data:
+    driver: local
+
