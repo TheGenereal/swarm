@@ -24,7 +24,7 @@ services:
     deploy:
       resources:
         reservations:
-          memory: 256M
+          memory: 128M
       placement:
         constraints:
           - node.hostname == rpi1
