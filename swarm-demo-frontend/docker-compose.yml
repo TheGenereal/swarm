@@ -2,9 +2,14 @@ version: "3.4"
 
 services:
   frontend:
-    image: snymanc/swarm-demo-frontend:rpi-v6
+    image: snymanc/swarm-demo-frontend:rpi-v7
     env_file:
       - config/app.env
+    healthcheck:
+      test: curl -f http://localhost:8080/status || false
+      interval: 2s
+      retries: 3
+      start_period: 3s
 
   db:
     image: postgres:9.6-alpine
