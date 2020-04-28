@@ -45,7 +45,10 @@ services:
     - source: pg_secret
   lb:
     deploy:
-      replicas: 3
+      mode: global
+      placement:
+        constraints:
+        - node.role == manager
     environment:
       PROXY_UPSTREAM: frontend:8080
     image: snymanc/swarm-demo-lb:rpi-v1
