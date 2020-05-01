@@ -7,6 +7,8 @@ services:
       - pg_secret
     env_file:
       - app.env
+    labels:
+      app: demo
     deploy:
       replicas: 10
       update_config:
@@ -18,6 +20,9 @@ services:
         condition: any
         delay: 15s
         max_attempts: 1
+      placement:
+        constraints:
+          - node.labels.region==zar-jhb
 
   db:
     image: snymanc/swarm-demo-db:rpi-v1
@@ -33,7 +38,7 @@ services:
           memory: 256M
       placement:
         constraints:
-          - node.hostname == node1
+          - node.hostname == rpi1
 
   lb:
     image: snymanc/swarm-demo-lb:rpi-v1
