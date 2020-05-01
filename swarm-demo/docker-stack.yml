@@ -2,37 +2,38 @@ version: "3.4"
 
 services:
   frontend:
-    image: snymanc/swarm-demo-frontend:rpi-v4
+    image: snymanc/swarm-demo-frontend:rpi-v8
     secrets:
       - pg_secret
     env_file:
       - app.env
     deploy:
-      replicas: 5
+      replicas: 10
       update_config:
         failure_action: rollback
         parallelism: 3
         delay: 3s
         max_failure_ratio: 0.1
+      restart_policy:
+        condition: any
+        delay: 15s
+        max_attempts: 1
 
   db:
-    image: postgres:9.6-alpine
+    image: snymanc/swarm-demo-db:rpi-v1
     env_file:
       - db.env
     secrets:
       - pg_secret
     volumes:
       - pg-data:/var/lib/postgresql/data
-    configs:
-      - source: dcnf_create_table_sql
-        target: /docker-entrypoint-initdb.d/create_table.sql
     deploy:
       resources:
         reservations:
           memory: 256M
       placement:
         constraints:
-          - node.hostname == rpi1
+          - node.hostname == node1
 
   lb:
     image: snymanc/swarm-demo-lb:rpi-v1
@@ -41,7 +42,10 @@ services:
     ports:
       - 80:80
     deploy:
-      replicas: 2
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
 
 volumes:
   pg-data:
@@ -49,9 +53,3 @@ volumes:
 secrets:
   pg_secret:
     file: ./pg_secret
-
-configs:
-  create_table_sql:
-    file: ../swarm-demo-db/create_table.sql
-  dcnf_create_table_sql:
-    external: true
